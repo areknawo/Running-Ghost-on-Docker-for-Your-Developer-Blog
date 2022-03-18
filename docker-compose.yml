@@ -1,0 +1,41 @@
+version: '3.3'
+services:
+
+  ghost:
+    image: ghost:latest
+    restart: always
+    depends_on:
+      - db
+    environment:
+      url: http://localhost:2368
+      database__client: mysql
+      database__connection__host: db
+      database__connection__user: ghost
+      database__connection__password: ghostdbpass
+      database__connection__database: ghostdb
+    volumes:
+      - /home/ghost/content:/var/lib/ghost/content
+
+  db:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: your_mysql_root_password
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ghostdbpass
+      MYSQL_DATABASE: ghostdb
+    volumes:
+      - /home/<username>/ghost/mysql:/var/lib/mysql
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - ghost
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt/:/etc/letsencrypt/
+      - /usr/share/nginx/html:/usr/share/nginx/html
